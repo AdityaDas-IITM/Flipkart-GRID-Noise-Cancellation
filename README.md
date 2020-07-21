@@ -7,7 +7,7 @@ to separate the primary speaker from background noise in a given audio file.
 
 # The Dataset
 ## Original Audio
-The Original Audio Recordings provided by Flipkart for this competition can be found [here](Audio Recordings/)
+The Original Audio Recordings provided by Flipkart for this competition can be found [here](AudioRecordings/)
 
 ## Target Audio
 We modified 30 of the above files to represent what we think would be ideal target audio for the model to learn from. 
