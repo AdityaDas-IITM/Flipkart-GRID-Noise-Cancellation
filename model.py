@@ -1,7 +1,7 @@
-from keras.layers import Dense, Conv1D, BatchNormalization, Dropout, LeakyReLU, Input, Flatten, Multiply, Conv2D, Reshape, PReLU, Add
-from keras.optimizers import Adam
-from keras.models import Sequential, Model
-from keras.activations import sigmoid
+from tensorflow.keras.layers import Dense, Conv1D, BatchNormalization, Dropout, LeakyReLU, Input, Flatten, Multiply, Conv2D, Reshape, PReLU, Add
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.activations import sigmoid
 import numpy as np
 import tensorflow as tf
 
@@ -25,7 +25,6 @@ class models():
         gbl_model = Model(inputs = gbl_model.input, outputs = new_block(gbl_model.output))
         Sc_layer = gbl_model.output[0]
 
-        
         for blocks in range(bl-1):
             new_block = self.ConvBlock(blocks+1, 0, blocks+1)[0]
             gbl_model = Model(inputs = gbl_model.input, outputs = new_block(gbl_model.output[1]))
@@ -53,35 +52,31 @@ class models():
         mask = sigmoid(Sc_layer)
 
         mult = Multiply()([mask,encoded_values])
-        gbl_model = Model(inputs = gbl_model.input, outputs = mult)
-        gbl_model.summary()
+        
         decoder = self.decoder()
-        #decoder_model = Model(inputs = mult, outputs = decoder(mult))
+        
 
         final_output = decoder(mult)
         gbl_model = Model(gbl_model.input, final_output)
-        #gbl_model = Model(inputs = gbl_model.input, outputs = decoder(gbl_model.output))
+
+        def custom_loss(ytrue, ypred):
+            s_target = (tf.tensordot(ytrue, ypred, axes = 0)/tf.tensordot(ytrue,ytrue, axes = 0))*ytrue
+            e_noise = ypred - s_target
+            SNR = 10*(tf.math.log(tf.tensordot(s_target, s_target, axes = 0)/tf.tensordot(e_noise, e_noise, axes = 0))/tf.math.log(10.0))
+
+            non_primary = self.whole_audio - ypred
+            sim = tf.tensordot(non_primary,ypred, axes = 0)/(tf.norm(non_primary)*tf.norm(ypred))
+
+            return -(SNR+sim)
+
+        gbl_model.compile(Adam(lr = 0.0001), loss = custom_loss)
+        
         gbl_model.summary()
-
-        #final_model = Model(inputs = gbl_model.input, outputs = decoder_model.output)
-
-
-        '''TCN = [self.ConvBlock(0, i, 0)[0] for i in range(2)]
-        Sc_layers = [TCN[i].output[0] for i in range(2)]
-        for verticals in range(2):
-            for blocks in range(5):
-                new_model = self.ConvBlock(blocks+1, verticals, blocks+1)[0]
-                TCN[verticals] = Model(inputs = TCN[verticals].input, outputs = new_model(TCN[verticals].output[1]))
-                Sc_layers[verticals] = Add()([Sc_layers[verticals], TCN[verticals].output[0]])
-
-        for j in range(2):
-            gbl_model = Model(inputs = gbl_model.input, outputs = TCN[i](gbl_model.outputs))'''
-
-
 
     def encoder(self):
         #input dimension 1xL, output dimension 1xN
         input_layer = Input(shape = (self.A, self.L, 1))
+        self.whole_audio = Input(shape = (self.A*self.L))
         layer1 = Conv2D(self.N, (1,self.L), input_shape = (self.A, self.L,1), activation = 'relu')(input_layer)
         layer2 = Flatten()(layer1)
         layer3 = Reshape(target_shape = (self.A, self.N, 1))(layer2)
@@ -93,7 +88,7 @@ class models():
 
         layer7 = Multiply()([layer3, layer6])
 
-        model = Model(inputs = input_layer, outputs = layer7)
+        model = Model(inputs = [input_layer, self.whole_audio], outputs = layer7)
         return model
 
     def ConvBlock(self, x, vertical, block):
@@ -129,9 +124,9 @@ class models():
         input_layer = Input(shape = (self.A, self.N, 1))
         layer1 = Conv2D(self.L, (1, self.N), activation = 'relu', input_shape = (self.A, self.N, 1))(input_layer)
         layer2 = Flatten()(layer1)
-        output = Reshape(target_shape = (self.A, self.L, 1))(layer2)
+        #output = Reshape(target_shape = (self.A, self.L, 1))(layer2)
 
-        model = Model(inputs = input_layer, outputs = output)
+        model = Model(inputs = input_layer, outputs = layer2)
         return model
 
     def ChannelChanger(self, input_channels, output_channels):
@@ -142,6 +137,3 @@ class models():
 
         model = Model(inputs = input_layer, outputs = layer3)
         return model
-
-test_model = models(10, 100, 200, 10, 20, 30, 2, 3).final_model
-test_model.summary()
