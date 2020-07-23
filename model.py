@@ -3,7 +3,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.activations import sigmoid
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+import keras.backend as K
 
 class models():
     def __init__(self, A, L, N, B, H, Sc, vr, bl):
@@ -14,8 +15,8 @@ class models():
         self.A = A
         self.Sc = Sc
 
-        gbl_model = self.encoder()
-        gbl_model = Model(inputs = gbl_model.input, outputs = [gbl_model.output,BatchNormalization()(gbl_model.output)])
+        self.encoder_model = self.encoder()
+        gbl_model = Model(inputs = self.encoder_model.input, outputs = [self.encoder_model.output,BatchNormalization()(self.encoder_model.output)])
 
         encoded_values = gbl_model.output[0]
         scale_conv1 = self.ChannelChanger(A, B)
@@ -53,29 +54,13 @@ class models():
 
         mult = Multiply()([mask,encoded_values])
         
-        decoder = self.decoder()
+        self.decoder_model = self.decoder()
         
 
-        final_output = decoder(mult)
-        gbl_model = Model(gbl_model.input, final_output)
+        final_output = self.decoder_model(mult)
 
-        def custom_loss(ytrue, ypred):
-            non_primary = self.whole_audio - ypred
-            sim = tf.tensordot(non_primary,ypred, axes = 0)/(tf.norm(non_primary)*tf.norm(ypred))
-
-            ypred = ypred - tf.math.reduce_mean(ypred)
-            ytrue = ytrue - tf.math.reduce_mean(ytrue)
-            s_target = (tf.tensordot(ytrue, ypred, axes = 0)/tf.tensordot(ytrue,ytrue, axes = 0))*ytrue
-            e_noise = ypred - s_target
-            SNR = 10*(tf.math.log(tf.tensordot(s_target, s_target, axes = 0)/tf.tensordot(e_noise, e_noise, axes = 0))/tf.math.log(10.0))
-
-            return -(SNR+sim)
-
-        gbl_model.compile(Adam(lr = 0.0001), loss = custom_loss)
-
-        self.gbl_model = gbl_model
-        
-        #gbl_model.summary()
+        self.gbl_model = Model(inputs = gbl_model.input, outputs = final_output)
+        self.encoder_decoder_model = Model(inputs = self.encoder_model.input, outputs = self.decoder_model(self.encoder_model.output))
 
     def encoder(self):
         #input dimension 1xL, output dimension 1xN
@@ -84,7 +69,8 @@ class models():
         L is the length of each segment. The output is of dimension AxN where each segment of length L is converted to a vector representation of length N
         '''
         input_layer = Input(shape = (self.A, self.L, 1))
-        self.whole_audio = Input(shape = (self.A*self.L))
+        #self.whole_audio = Input(shape = (self.A*self.L))
+        #self.whole_audio = tf.placeholder(dtype = 'float32', shape = (self.A*self.L))
         layer1 = Conv2D(self.N, (1,self.L), input_shape = (self.A, self.L,1), activation = 'relu')(input_layer)
         layer2 = Flatten()(layer1)
         layer3 = Reshape(target_shape = (self.A, self.N, 1))(layer2)
@@ -101,7 +87,8 @@ class models():
 
         layer7 = Multiply()([layer3, layer6])
 
-        model = Model(inputs = [input_layer, self.whole_audio], outputs = layer7)
+        #model = Model(inputs = [input_layer, whole_audio], outputs = layer7)
+        model = Model(inputs = input_layer, outputs = layer7)
         return model
 
     def ConvBlock(self, x, vertical, block):
@@ -137,7 +124,7 @@ class models():
     
     def decoder(self):
         input_layer = Input(shape = (self.A, self.N, 1))
-        layer1 = Conv2D(self.L, (1, self.N), activation = 'relu', input_shape = (self.A, self.N, 1))(input_layer)
+        layer1 = Conv2D(self.L, (1, self.N), activation = 'linear', input_shape = (self.A, self.N, 1))(input_layer)
         layer2 = Flatten()(layer1)
         #output = Reshape(target_shape = (self.A, self.L, 1))(layer2)
 
@@ -152,5 +139,33 @@ class models():
 
         model = Model(inputs = input_layer, outputs = layer3)
         return model
+
+    def train(self, input_value, whole_audio, output, epochs):
+        def global_model_loss(whole_audio):
+            def custom_loss(ytrue, ypred):
+                #non_primary = tf.reshape(self.gbl_model.input[1], shape = (self.A*self.L,1)) - ypred
+                non_primary = whole_audio - ypred
+                sim = K.dot(non_primary,K.transpose(ypred))/(tf.norm(non_primary)*tf.norm(ypred))
+
+                ypred = ypred - K.mean(ypred)
+                ytrue = ytrue - K.mean(ytrue)
+                s_target = (K.dot(ytrue, K.transpose(ypred))/K.dot(ytrue,K.transpose(ytrue)))*ytrue
+                e_noise = ypred - s_target
+                SNR = 10*(K.log(K.dot(s_target, K.transpose(s_target))/K.dot(e_noise, K.transpose(e_noise)))/K.log(10.0))
+                return -(SNR+sim)
+            return custom_loss
+        self.gbl_model.compile(Adam(lr=0.001), loss = global_model_loss(whole_audio))
+        self.gbl_model.fit(x = input_value, y = output, epochs = epochs, batch_size = 1)   
+
+        def encoder_decoder_model_loss(ytrue, ypred):
+            ypred = ypred - K.mean(ypred)
+            ytrue = ytrue - K.mean(ytrue)
+            s_target = (K.dot(ytrue, K.transpose(ypred))/K.dot(ytrue,K.transpose(ytrue)))*ytrue
+            e_noise = ypred - s_target
+            SNR = 10*(K.log(K.dot(s_target, K.transpose(s_target))/K.dot(e_noise, K.transpose(e_noise)))/K.log(10.0))
+            return -SNR
+
+        self.encoder_decoder_model.compile(Adam(lr = 0.001), loss = encoder_decoder_model_loss)
+        self.encoder_decoder_model.fit(x = input_value, y = whole_audio, batch_size=1, epochs = epochs) 
 
 #model = models(10,100,10,10,10,10,2,3)

@@ -11,4 +11,5 @@ def inputProcess(path, A, L):
     return arr_pad, arr_reshaped
 
 def wavCreator(path, arr):
+    arr = np.array(arr).T
     librosa.output.write_wav(path, arr, sr=22000)
