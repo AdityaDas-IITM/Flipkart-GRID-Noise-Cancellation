@@ -8,8 +8,8 @@ import keras.backend as K
 #tf.compat.v1.disable_eager_execution()
 #tf.config.experimental_run_functions_eagerly(True)
 K.clear_session()
-A = 1000
-L = 220
+A = 2000
+L = 110
 N = 128
 B = 128
 H = 128
