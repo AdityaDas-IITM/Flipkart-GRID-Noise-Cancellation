@@ -2,8 +2,8 @@ from tensorflow.keras.layers import Dense, Conv1D, BatchNormalization, Dropout, 
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.activations import sigmoid
-import numpy as np
 import tensorflow.compat.v1 as tf
+import numpy as np
 import keras.backend as K
 
 class models():
@@ -167,5 +167,9 @@ class models():
 
         self.encoder_decoder_model.compile(Adam(lr = 0.001), loss = encoder_decoder_model_loss)
         self.encoder_decoder_model.fit(x = input_value, y = whole_audio, batch_size=1, epochs = epochs) 
+
+    def export_model(self, path):
+        print('.....Saving Model......')
+        self.gbl_model.save(path)
 
 #model = models(10,100,10,10,10,10,2,3)
