@@ -72,8 +72,10 @@ class models():
             return -(SNR+sim)
 
         gbl_model.compile(Adam(lr = 0.0001), loss = custom_loss)
+
+        self.gbl_model = gbl_model
         
-        gbl_model.summary()
+        #gbl_model.summary()
 
     def encoder(self):
         #input dimension 1xL, output dimension 1xN
@@ -151,4 +153,4 @@ class models():
         model = Model(inputs = input_layer, outputs = layer3)
         return model
 
-model = models(10,100,10,10,10,10,2,3)
+#model = models(10,100,10,10,10,10,2,3)
