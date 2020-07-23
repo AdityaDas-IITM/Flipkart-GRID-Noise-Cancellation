@@ -60,12 +60,14 @@ class models():
         gbl_model = Model(gbl_model.input, final_output)
 
         def custom_loss(ytrue, ypred):
+            non_primary = self.whole_audio - ypred
+            sim = tf.tensordot(non_primary,ypred, axes = 0)/(tf.norm(non_primary)*tf.norm(ypred))
+
+            ypred = ypred - tf.math.reduce_mean(ypred)
+            ytrue = ytrue - tf.math.reduce_mean(ytrue)
             s_target = (tf.tensordot(ytrue, ypred, axes = 0)/tf.tensordot(ytrue,ytrue, axes = 0))*ytrue
             e_noise = ypred - s_target
             SNR = 10*(tf.math.log(tf.tensordot(s_target, s_target, axes = 0)/tf.tensordot(e_noise, e_noise, axes = 0))/tf.math.log(10.0))
-
-            non_primary = self.whole_audio - ypred
-            sim = tf.tensordot(non_primary,ypred, axes = 0)/(tf.norm(non_primary)*tf.norm(ypred))
 
             return -(SNR+sim)
 
@@ -75,6 +77,10 @@ class models():
 
     def encoder(self):
         #input dimension 1xL, output dimension 1xN
+        '''
+        The encoder takes in an input of dimension AxL where A is the number of segments the audio is been broken to with 0 padding if necessary and
+        L is the length of each segment. The output is of dimension AxN where each segment of length L is converted to a vector representation of length N
+        '''
         input_layer = Input(shape = (self.A, self.L, 1))
         self.whole_audio = Input(shape = (self.A*self.L))
         layer1 = Conv2D(self.N, (1,self.L), input_shape = (self.A, self.L,1), activation = 'relu')(input_layer)
@@ -86,13 +92,20 @@ class models():
         layer5 = Flatten()(layer4)
         layer6 = Reshape(target_shape = (self.A, self.N, 1))(layer5)
 
+        '''
+        The two blocks take the same input layer and performs the same convolution operation. One block is relu activated and the other is sigmoid.
+        these outputs are then multiplied to finally give the encodings and this architecture is a gated convolution network.
+        '''
+
         layer7 = Multiply()([layer3, layer6])
 
         model = Model(inputs = [input_layer, self.whole_audio], outputs = layer7)
         return model
 
     def ConvBlock(self, x, vertical, block):
-        #input is BxN
+        '''
+        This is the building block of a TCN. The input is of dimention BxN and it has two outputs of dimension BxN and ScxN.
+        '''
         input_layer = Input(shape = (self.B, self.N, 1))
         layer1 = Conv2D(self.H, (self.B, 1), input_shape = (self.B, self.N, 1), activation = 'relu')(input_layer)
         layer2 = Flatten()(layer1)
@@ -117,7 +130,7 @@ class models():
         output = Add()([Reshape(target_shape = (self.B, self.N, 1))(layer12), input_layer]) 
 
         model = Model(inputs = input_layer, outputs = [Skip_Connection, output], name = 'Vertical'+str(vertical)+'block'+str(block))
-        model1 = Model(inputs = input_layer, outputs = Skip_Connection )
+        model1 = Model(inputs = input_layer, outputs = Skip_Connection, name = 'SpecialConv' )
         return [model, model1]
     
     def decoder(self):
@@ -137,3 +150,5 @@ class models():
 
         model = Model(inputs = input_layer, outputs = layer3)
         return model
+
+model = models(10,100,10,10,10,10,2,3)
