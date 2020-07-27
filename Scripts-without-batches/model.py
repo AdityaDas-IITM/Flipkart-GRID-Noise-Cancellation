@@ -74,7 +74,7 @@ class models():
             s_target = (K.dot(ytrue, K.transpose(ypred))/K.dot(ytrue,K.transpose(ytrue)))*ytrue
             e_noise = ypred - s_target
             SNR = 10*(K.log(K.dot(s_target, K.transpose(s_target))/K.dot(e_noise, K.transpose(e_noise)))/K.log(10.0))
-            return sim-10*SNR
+            return 3*sim-10*SNR
         
         self.gbl_model.add_loss(gbl_model_loss(self.y_true, final_output, self.whole_audio))
         self.gbl_model.compile(optimizer = Adam(lr=0.001), loss = None)
