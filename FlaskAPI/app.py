@@ -10,7 +10,7 @@ import librosa
 import numpy as np
 
 def load_model():
-    model = tf.keras.models.load_model('gbl_model.h5')
+    model = tf.keras.models.load_model('Model/gbl_model.h5', compile=False)
     return model
 
 def inputProcess(file, A=2000, L=110):
@@ -29,22 +29,30 @@ app = Flask(__name__)
 
 @app.route('/predict', methods = ['GET', 'POST'])
 def predict():
-    print("Request: ", request)
-    request_json = request.
-
-    file = request_json['file']
-    path = request_json['path']
-
-    arr_reshaped = inputProcess(file)
-
-    model = load_model()
-    denoised_arr = model.predict([arr_reshaped, np.zeros((1, 2000*110))])
-
-    wavCreator(path, denoised_arr)
+    response = json.dumps('')
+    if request.method == 'POST':
+        response = json.dumps('')
+        print("Request: ", request)
+        request_data = request.json
+        #response = request_json
+        #return response, 200
+        print("request_data: ", request_data)
+        print("reached before file")
+        file = open(request_data['input_path'], 'rb')
+        print("reached after file")
+        path = request_data['output_path']
+        print("path: ", path)
+        arr_reshaped = inputProcess(file)
     
-    response = json.dumps({1:2})
+        model = load_model()
+        denoised_arr = model.predict([arr_reshaped, np.zeros((1, 2000*110))])
+    
+        wavCreator(path, denoised_arr)
+        
+        response = json.dumps({1:2})
 
-    return response, 200
+        return response, 200
+    return response, 303
 
 if __name__ == "__main__":
     app.run(debug=True)
