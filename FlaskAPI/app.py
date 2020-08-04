@@ -28,12 +28,12 @@ def inputProcess(filepath, A=2000, L=110):
 
 def wavCreator(path, arr):
     arr = np.array(arr).T
-    librosa.output.write_wav(path + 'output.wav', arr, sr=22000)
+    librosa.output.write_wav(path, arr, sr=22000)
     #write(path, 22000, arr)
 
 app = Flask(__name__)
 app.debug = True
-
+model = load_model()
 @app.route('/predict', methods = ['GET', 'POST'])
 def predict():
     response = json.dumps('')
@@ -51,7 +51,7 @@ def predict():
         print("path: ", path)
         arr_reshaped = inputProcess(filepath)
     
-        model = load_model()
+        
         denoised_arr = model.predict([arr_reshaped, np.zeros((1, 2000*110))])
     
         wavCreator(path, denoised_arr)
