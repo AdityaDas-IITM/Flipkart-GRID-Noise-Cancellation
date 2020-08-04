@@ -8,13 +8,18 @@ import json
 import tensorflow as tf
 import librosa
 import numpy as np
+from scipy.io.wavfile import write
+
+
 
 def load_model():
     model = tf.keras.models.load_model('Model/gbl_model.h5', compile=False)
     return model
 
-def inputProcess(file, A=2000, L=110):
-    arr, _ = librosa.load(file, sr=22000)
+def inputProcess(filepath, A=2000, L=110):
+    arr, _ = librosa.load(filepath, sr=22000)
+    #arr = open(filepath, "r")
+    print("array = ",arr)
     arr_pad = np.pad(arr, (0, A*L - len(arr)), 'constant', constant_values=(0,0))
     arr_reshaped = arr_pad.reshape(1, A, L, 1)
     arr_pad = np.reshape(arr_pad, (1, -1))
@@ -23,9 +28,11 @@ def inputProcess(file, A=2000, L=110):
 
 def wavCreator(path, arr):
     arr = np.array(arr).T
-    librosa.output.write_wav(path, arr, sr=22000)
+    librosa.output.write_wav(path + 'output.wav', arr, sr=22000)
+    #write(path, 22000, arr)
 
 app = Flask(__name__)
+app.debug = True
 
 @app.route('/predict', methods = ['GET', 'POST'])
 def predict():
@@ -38,11 +45,11 @@ def predict():
         #return response, 200
         print("request_data: ", request_data)
         print("reached before file")
-        file = open(request_data['input_path'], 'rb')
+        filepath = request_data['input_path']
         print("reached after file")
         path = request_data['output_path']
         print("path: ", path)
-        arr_reshaped = inputProcess(file)
+        arr_reshaped = inputProcess(filepath)
     
         model = load_model()
         denoised_arr = model.predict([arr_reshaped, np.zeros((1, 2000*110))])
@@ -56,4 +63,4 @@ def predict():
 
 if __name__ == "__main__":
     app.run(debug=True)
-    
+
