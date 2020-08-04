@@ -56,7 +56,11 @@ class models():
         mask = sigmoid(Sc_layer)
 
         mult = Multiply()([mask,encoded_values])
-        
+        '''
+        mult_dash = encoded_values - mult
+        mult_flatten = Flatten()(mult)
+        mult_dash_flatten = Flatten()(mult_dash)
+        '''
         self.decoder_model = self.decoder()
         
 
@@ -69,14 +73,17 @@ class models():
             non_primary = whole_audio - ypred # (2,220000)
             sim = tf.math.divide(K.batch_dot(non_primary, ypred, axes = (1,1)),tf.math.multiply(tf.norm(non_primary, axis = [-2,-1]),tf.norm(ypred, axis = [-2,-1]))) # (2,2)
             sim = K.mean(sim)
-
+            #sim = tf.math.divide(K.batch_dot(mult_flatten, mult_dash_flatten, axes = (1,1)),tf.math.multiply(tf.norm(mult_flatten, axis = [-2,-1]),tf.norm(mult_dash_flatten, axis = [-2,-1])))
+            #sim = K.mean(sim)
+            
             ypred = ypred - K.mean(ypred)
             ytrue = ytrue - K.mean(ytrue)
             s_target = tf.math.multiply(tf.math.divide(K.batch_dot(ytrue, ypred, axes = (1,1)),K.batch_dot(ytrue,ytrue, axes = (1,1))),ytrue)
             e_noise = ypred - s_target
             SNR = 10*(K.log(tf.math.divide(K.batch_dot(s_target, s_target, axes = (1,1)),K.batch_dot(e_noise, e_noise, axes = (1,1))))/K.log(10.0))
             SNR = K.mean(SNR)
-            return sim-10*SNR
+            return sim - 10*SNR
+            #return sim
         
         #self.gbl_model.add_loss(gbl_model_loss(self.y_true, final_output, self.whole_audio))
         self.gbl_model.compile(optimizer = Adam(lr=0.001), loss = gbl_model_loss)
@@ -118,7 +125,7 @@ class models():
         layer7 = Multiply()([layer3, layer6])
 
         #model = Model(inputs = [input_layer, whole_audio], outputs = layer7)
-        model = Model(inputs = input_layer, outputs = layer7, name = 'encoder')
+        model = Model(inputs = input_layer, outputs = layer7)
         return model
 
     def ConvBlock(self, x, vertical, block):
@@ -149,7 +156,7 @@ class models():
         output = Add()([Reshape(target_shape = (self.B, self.N, 1))(layer12), input_layer]) 
 
         model = Model(inputs = input_layer, outputs = [Skip_Connection, output], name = 'Vertical'+str(vertical)+'block'+str(block))
-        model1 = Model(inputs = input_layer, outputs = Skip_Connection, name = 'FinalConvBlock' )
+        model1 = Model(inputs = input_layer, outputs = Skip_Connection)
         return [model, model1]
     
     def decoder(self):
@@ -167,16 +174,16 @@ class models():
         layer2 = Flatten()(layer1)
         layer3 = Reshape(target_shape = (output_channels, self.N, 1))(layer2)
 
-        model = Model(inputs = input_layer, outputs = layer3, name = 'ChannelChanger')
+        model = Model(inputs = input_layer, outputs = layer3)
         return model
     
-    def train(self, input_value, whole_audio, output, epochs_gbl_model, epochs_encoder_decoder, batch_size):
+    def train(self, input_value, whole_audio, output, epochs_gbl_model, epochs_encoder_decoder, batch_size, valid, valid_target, valid_reshaped):
         
         print('...training encoder decoder...')
-        self.encoder_decoder_model.fit(x = input_value, y = whole_audio, batch_size=batch_size, epochs = epochs_encoder_decoder) 
+        self.encoder_decoder_model.fit(x = input_value, y = whole_audio,validation_data = (valid_reshaped,valid_target), batch_size=batch_size, epochs = epochs_encoder_decoder) 
     
         print('...training gbl model...')
-        self.gbl_model.fit(x = [input_value, whole_audio], y = output, epochs = epochs_gbl_model, batch_size = batch_size)   
+        self.gbl_model.fit(x = [input_value, whole_audio], y = output, epochs = epochs_gbl_model, validation_data = ([valid_reshaped,valid], valid_target), batch_size = batch_size)   
 
         
 
