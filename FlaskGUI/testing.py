@@ -15,7 +15,7 @@ if(guiobj.check):
     print(res) 
 
 else:
-    for music in os.listdir(inputdir):
+    for music in os.listdir(guiobj.inputdirpath):
         data = {'input_path' : guiobj.inputdirpath+ '/' + music, 'output_path' : outputdir + 'pred_'+music}
         res = requests.post(url, headers=headers, json=data)
         print(res)

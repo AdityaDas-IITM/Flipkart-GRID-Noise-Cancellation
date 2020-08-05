@@ -34,7 +34,7 @@ def wavCreator(path, arr):
     #write(path, 22000, arr)
 
 app = Flask(__name__)
-app.debug = True
+
 model = load_model()
 @app.route('/predict', methods = ['GET', 'POST'])
 def predict():
