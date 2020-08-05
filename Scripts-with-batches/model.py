@@ -1,4 +1,4 @@
-# %% [code]
+# Imports
 from tensorflow.keras.layers import Dense, Conv1D, BatchNormalization, Dropout, LeakyReLU, Input, Flatten, Multiply, Conv2D, Reshape, PReLU, Add
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential, Model
@@ -7,6 +7,7 @@ import tensorflow.compat.v1 as tf
 import numpy as np
 import keras.backend as K
 
+#Defining a models class
 class models():
     def __init__(self, A, L, N, B, H, Sc, vr, bl):
         self.L = L

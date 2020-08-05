@@ -6,7 +6,7 @@ import requests
 
 headers = {'Authorization' : 'Token 3715119fd7753d33bedbd3c2832752ee7b0a10c7'}
 data = {'user' : '310' ,'language' : 'HI'}
-files = {'audio_file' : open('C:/Projects/Flipkart-GRID-Noise-Cancellation/Audio-Recordings/259.mp3','rb')}
+files = {'audio_file' : open('Outputs/0_output(4).wav','rb')}
 url = 'https://dev.liv.ai/liv_transcription_api/recordings/'
 res = requests.post(url, headers = headers, data = data, files = files)
 content = res.json()['transcriptions']
