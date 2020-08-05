@@ -22,3 +22,15 @@ The scripts for this can be found here:
 ## Model Building
 Following are the scripts that we have used for building our model:
 - Utility Script: [Utils](Scripts-with-batches/utils.py)
+- Script which builds the Model: [Model](Scripts-with-batches/model.py)
+- Main Script for training: [Training Script](Scripts-with-batches/flipkart-main.py)
+
+## Datsets
+We manually made our data where we created 30 odd files with just background noise and 30 odd files which contains clear voice. We then generated our dataset by mixing each clean audio with each background noise to create a new audio file. This way we got 1000 audio files. We also incorporated a function where we scaled our noise by some amount to get three sets of audio: One with a dimmed out noise, one with the noise at the same level as the clean audio and one with an amplified noise. Totally we got 3000 audio samples from this mixing.
+
+The datasets as of now are uploaded to Kaggle and are Private. Anyone with the following links will be able to access it. The dataset will be made public after the competition is over, if Flipkart allows it.
+
+- Link to the 3000+ Train Files: www.kaggle.com/dataset/41c6bd8cbc8109cdc51517df16c519d3f9ca3befc6e2f8d83a5595688b31caed
+- Link to 3000+ Target Files: www.kaggle.com/dataset/6bbb0b80904bc32de86c41a8c537b2fa5cc955b3db00c3c5ac0559d2f4f34815
+- Weights after Model was trained: www.kaggle.com/dataset/8d55d0a3859676a9c39f3ae29f33a7076e67168529a33aaeb85ff94e0bcde9ac
+- Original Files from Flipkart: www.kaggle.com/dataset/10241db9506e5adeecabcfcd44c2ed3de5e79563e1473cc7eb3cea13b5644e47
