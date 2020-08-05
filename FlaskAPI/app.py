@@ -9,10 +9,12 @@ import tensorflow as tf
 import librosa
 import numpy as np
 from scipy.io.wavfile import write
+import tensorflow.keras.backend as K
 
 
 
 def load_model():
+    K.clear_session()
     model = tf.keras.models.load_model('Model/gbl_model.h5', compile=False)
     return model
 
