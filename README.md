@@ -6,6 +6,10 @@ This repository contains team Third Degree Burn's solution for Round 3 of the Fl
 ### Without a GUI
 We have provided an API which uses Flask to take in the path to an input file or a directory with multiple input files and the path to an output directory where the files will be stored in WAV format. To make use of our scripts, run [this](FlaskNoGUI/wsgi.py) wsgi script on a terminal and then run [this](FlaskNoGUI/testing.py) interacting script separately to start interacting with the server.
 
+    $ cd FlaskNoGUI
+    
+    $ python wsgi.py
+
 The scripts can be found here:
 - Web Server Gateway Interface Script : [WSGI Script](FlaskNoGUI/wsgi.py)
 - The Script for the App : [App Script](FlaskNoGUI/app.py) 
