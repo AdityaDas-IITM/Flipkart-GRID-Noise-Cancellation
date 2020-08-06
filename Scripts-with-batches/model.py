@@ -158,7 +158,7 @@ class models():
     Returns: model with and without skip connection
 
     Function Description:
-    This function makes the building block of a TCN. It takes an input of dimension BxN where B is a hyperparameter. First ir goes through a Convolution operation
+    This function makes the building block of a TCN. It takes an input of dimension BxN where B is a hyperparameter. First it goes through a Convolution operation
     which gives an output of dimension HxN, where H is a hyperparameter. This then goes through a Depthwise convolution operation that operates on each row individually
     with a filter size determined by x and outputs and array of dimension HxN. This output then branches into two convolution layers, one giving an output of
     Dimension BxN and the other ScxN(called skip connection). There also exists a residual connection between the Input to this model and the BxN dimensional output
