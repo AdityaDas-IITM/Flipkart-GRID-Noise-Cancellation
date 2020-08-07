@@ -10,12 +10,13 @@ import librosa
 import numpy as np
 from scipy.io.wavfile import write
 import tensorflow.keras.backend as K
+import soundfile
 
 
 
 def load_model():
     K.clear_session()
-    model = tf.keras.models.load_model('D:\Github Repos\Flipkart-GRID-Noise-Cancellation2\FlaskNoGUI/Model/gbl_model.h5', compile=False)
+    model = tf.keras.models.load_model('D:\Github Repos\Flipkart-GRID-Noise-Cancellation2\FlaskNoGUI/Model/gbl_model15.h5', compile=False)
     return model
 
 def inputProcess(filepath, A=2000, L=110):
@@ -30,7 +31,8 @@ def inputProcess(filepath, A=2000, L=110):
 
 def wavCreator(path, arr):
     arr = np.array(arr).T
-    librosa.output.write_wav(path, arr, sr=22000)
+    #librosa.output.write_wav(path, arr, sr=22000)
+    soundfile.write(path, arr, 22000)
     #write(path, 22000, arr)
 
 app = Flask(__name__)
