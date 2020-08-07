@@ -10,12 +10,12 @@ guiobj = smallGUI()
 outputdir = guiobj.outputdirpath + '/'
 
 if(guiobj.check):
-    data = {'input_path' : guiobj.inputfile, 'output_path' : outputdir + 'TDB_Prediction.wav'}
+    data = {'input_path' : guiobj.inputfile, 'output_path' : outputdir + 'TDB_Prediction.flac'}
     res = requests.post(url, headers=headers, json=data)
     print(res) 
 
 else:
-    for music in os.listdir(guiobj.inputdirpath):
+    for music in sorted(os.listdir(guiobj.inputdirpath))[200:]:
         data = {'input_path' : guiobj.inputdirpath+ '/' + music, 'output_path' : outputdir + 'pred_'+music}
         res = requests.post(url, headers=headers, json=data)
         print(res)

@@ -10,7 +10,7 @@ isFile = os.path.isfile(datatemp['input_path'])
 data = {}
 if(isFile):
     data = datatemp
-    data['output_path'] = data['output_path']+'\TDB_Prediction.wav'
+    data['output_path'] = data['output_path']+'\TDB_Prediction.flac'
     res = requests.post(url, headers=headers, json=data)
     print(res)
 
