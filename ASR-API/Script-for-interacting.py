@@ -13,10 +13,10 @@ headers = {'Authorization' : 'Token 3715119fd7753d33bedbd3c2832752ee7b0a10c7'}
 data = {'user' : '310' ,'language' : 'HI'}
 url = 'https://dev.liv.ai/liv_transcription_api/recordings/'
 
-folder_path = 'C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/predictions/'
+folder_path = 'C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/Predictions2/'
 for music in sorted(os.listdir(folder_path)):
     print(music)
-    '''
+    
     files = {'audio_file' : open(folder_path + music,'rb')}
     res = requests.post(url, headers = headers, data = data, files = files)
     content = (res.json()['transcriptions'])[0]['utf_text']
@@ -25,12 +25,11 @@ for music in sorted(os.listdir(folder_path)):
 
 datafile['Filename'] = filenames
 datafile['ASR'] = transcriptions
-datafile.to_excel('C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/ASR-API/ASRTranscriptions.xlsx', index = False)
+datafile.to_excel('C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/ASR-API/ASRTranscriptions3.xlsx', index = False)
 
-ASR_data = pd.read_excel("C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/ASR-API/ASRTranscriptions.xlsx")
-true_data = pd.read_excel("C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/ASR-API/TrueTranscriptions.xlsx")
+ASR_data = pd.read_excel("C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/ASR-API/ASRTranscriptions3.xlsx")
+true_data = pd.read_csv("C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/ASR-API/Truetranscriptions.csv")
 
-all_data = pd.concat([ASR_data['Filename'], true_data['Transcription '] , ASR_data['ASR']], axis=1)
+all_data = pd.concat([ASR_data['Filename'], true_data['Transcription'] , ASR_data['ASR']], axis=1)
 all_data.to_excel('C:/Users/nihal/Downloads/FlipkartNoiseCancel/Round3/Key Guidelines and Audio Recording Updated/Flipkart-GRID-Noise-Cancellation/ASR-API/AllData.xlsx', index = False)
 print(len(all_data))
-'''
