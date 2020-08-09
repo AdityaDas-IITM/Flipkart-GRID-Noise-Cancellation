@@ -14,9 +14,9 @@ def wer(r, h):
 
     Examples
     --------
-    wer("who is there", "is there") returns 1
-    wer("who is there", "") returns 3
-    wer("", "who is there") returns 3
+    wer("who is there", "is there") returns 1  
+    wer("who is there", "") returns 3  
+    wer("", "who is there") returns 3  
     """
 
     # Split string into list of words
