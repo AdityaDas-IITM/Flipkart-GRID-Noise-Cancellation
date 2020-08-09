@@ -1,4 +1,4 @@
-from tensorflow.keras.layers import Dense, Conv1D, BatchNormalization, Dropout, LeakyReLU, Input, Flatten, Multiply, Conv2D, Reshape, PReLU, Add
+from tensorflow.keras.layers import Dense, Conv1D, LayerNormalization, Dropout, LeakyReLU, Input, Flatten, Multiply, Conv2D, Reshape, PReLU, Add
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.activations import sigmoid
@@ -45,7 +45,7 @@ class models():
         self.whole_audio = Input(shape = (A*L,))
         
         self.encoder_model = self.encoder()
-        gbl_model = Model(inputs = self.encoder_model.input, outputs = [self.encoder_model.output,BatchNormalization()(self.encoder_model.output)])
+        gbl_model = Model(inputs = self.encoder_model.input, outputs = [self.encoder_model.output,LayerNormalization(axis=2)(self.encoder_model.output)])
 
         encoded_values = gbl_model.output[0]
         scale_conv1 = self.ChannelChanger(A, B)
@@ -171,10 +171,10 @@ class models():
         layer2 = Flatten()(layer1)
         layer3 = Reshape(target_shape = (self.H, self.N, 1))(layer2)
         layer4 = PReLU()(layer3)
-        layer5 = BatchNormalization()(layer4)
+        layer5 = LayerNormalization(axis=2)(layer4)
         layer6 = Conv2D(1, (1,2**(x)), activation = 'linear', padding = 'same')(layer5)
         layer7 = PReLU()(layer6)
-        layer8 = BatchNormalization()(layer7)
+        layer8 = LayerNormalization(axis=2)(layer7)
         layer9 = Conv2D(self.Sc, (self.H,1), activation = 'relu')(layer8)
         layer10 = Flatten()(layer9)
         Skip_Connection = Reshape(target_shape = (self.Sc, self.N, 1))(layer10)
