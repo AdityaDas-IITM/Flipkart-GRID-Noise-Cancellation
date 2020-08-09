@@ -19,8 +19,8 @@ def load_model():
     model = tf.keras.models.load_model('D:\Github Repos\Flipkart-GRID-Noise-Cancellation2\FlaskNoGUI/Model/gbl_model.h5', compile=False)
     return model
 
-def inputProcess(filepath, A=2000, L=110):
-    arr, _ = librosa.load(filepath, sr=22000, duration = 10)
+def inputProcess(filepath, A=2000, L=165):
+    arr, _ = librosa.load(filepath, sr=22000 )
     #arr = open(filepath, "r")
     print("array = ",arr)
     arr_pad = np.pad(arr, (0, A*L - len(arr)), 'constant', constant_values=(0,0))

@@ -19,7 +19,7 @@ def load_model():
     model = tf.keras.models.load_model('Model/gbl_model.h5', compile=False)
     return model
 
-def inputProcess(filepath, A=2000, L=110):
+def inputProcess(filepath, A=2000, L=165):
     arr, _ = librosa.load(filepath, sr=22000)
     #arr = open(filepath, "r")
     print("array = ",arr)
