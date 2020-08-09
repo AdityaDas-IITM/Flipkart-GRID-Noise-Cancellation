@@ -16,7 +16,7 @@ import soundfile
 
 def load_model():
     K.clear_session()
-    model = tf.keras.models.load_model('D:\Github Repos\Flipkart-GRID-Noise-Cancellation2\FlaskNoGUI/Model/gbl_model15.h5', compile=False)
+    model = tf.keras.models.load_model('D:\Github Repos\Flipkart-GRID-Noise-Cancellation2\FlaskNoGUI/Model/gbl_model.h5', compile=False)
     return model
 
 def inputProcess(filepath, A=2000, L=110):
